@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام الوكيل الذكي 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <h2>🔒 نظام الوكيل الذكي</h2>
+        <p>يرجى إدخال رمز الدخول</p>
+        <input type="password" id="pinInput" placeholder="الرمز" maxlength="4">
+        <button onclick="checkPin()" style="margin-top: 20px; background: var(--accent-color); color: #000;">دخول</button>
+    </div>
+
+    <div id="tabHome" class="tab-content active">
+        <div class="glass-panel">
+            <div class="dashboard-stats">
+                <div class="stat-box">
+                    <h3 id="totalFamilies">0</h3>
+                    <p>العوائل</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="totalIndividuals">0</h3>
+                    <p>الأفراد</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="dateToday">--</h3>
+                    <p>التاريخ</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="printArea">
+            <div class="print-header">
+                <h1>وزارة التجارة - وصل تجهيز وكيل</h1>
+                <p>تاريخ الطباعة: <span id="printDate"></span></p>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 20px;">بطاقة المواد الغذائية 2026</h2>
+            
+            <div class="form-grid">
+                <div>
+                    <label>رقم البطاقة التموينية</label>
+                    <input type="text" id="cardNumber">
+                </div>
+                <div>
+                    <label>اسم رب الأسرة</label>
+                    <input type="text" id="headName">
+                </div>
+                <div>
+                    <label>عدد الأفراد (الكلي)</label>
+                    <input type="number" id="familyCount" value="0">
+                </div>
+                <div>
+                    <label>مستحقين</label>
+                    <input type="number" id="eligibleCount" value="0">
+                </div>
+                <div>
+                    <label>محجوبين</label>
+                    <input type="number" id="blockedCount" value="0">
+                </div>
+                <div>
+                    <label>اسم الوكيل</label>
+                    <input type="text" id="agentName" value="ساجدة كردي علي">
+                </div>
+                <div class="full-width">
+                    <label>ملاحظات الوكيل</label>
+                    <textarea id="notes" rows="2" placeholder="ملاحظات..."></textarea>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="rationTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%">المادة</th>
+                            <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
+                            <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div style="display: none; justify-content: space-between; margin-top: 30px;" class="print-only">
+                <div>توقيع الوكيل</div>
+                <div>توقيع المستلم</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-new" onclick="clearForm()">📄 جديد</button>
+            <button class="btn-save" onclick="saveData()">💾 حفظ (سحابي)</button>
+            <button class="btn-print" onclick="printReceipt()">🖨️ طباعة</button>
+            <button class="btn-del" onclick="deleteCurrent()">🗑️ حذف</button>
+        </div>
+    </div>
+
+    <div id="tabSearch" class="tab-content">
+        <div class="glass-panel">
+            <h2 style="text-align: center;">🔍 سجل العوائل</h2>
+            <div class="search-area">
+                <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الرقم..." style="width: 100%; text-align: center;">
+            </div>
+            <div id="searchResults" class="search-results" style="display: block; position: static;"></div>
+        </div>
+    </div>
+
+    <div id="tabSettings" class="tab-content">
+        <div class="glass-panel" id="backupControls" style="text-align: center;">
+            <h4 style="margin-top: 0;">🛠️ أدوات النظام</h4>
+            <p>حالة الاتصال: <span id="connectionStatus" style="color: var(--success-color);">متصل بـ Firestore ✅</span></p>
+            <hr style="border-color: var(--glass-border);">
+            
+            <button class="btn-install" id="installBtn" onclick="installApp()">📲 تثبيت التطبيق</button>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn-backup" onclick="exportData()">⬇️ تصدير محلي (JSON)</button>
+                <br><br>
+                <button class="btn-backup" onclick="document.getElementById('fileInput').click()">⬆️ استيراد محلي</button>
+                <input type="file" id="fileInput" style="display: none" onchange="importData(this)">
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('tabHome', this)">
+            <span>🏠</span> الرئيسية
+        </button>
+        <button class="nav-btn" onclick="switchTab('tabSearch', this)">
+            <span>🔍</span> البحث
+        </button>
+        <button class="nav-btn" onclick="switchTab('tabSettings', this)">
+            <span>⚙️</span> الإعدادات
+        </button>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

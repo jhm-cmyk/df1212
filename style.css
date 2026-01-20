@@ -1,0 +1,87 @@
+
+/* لوحة الإحصائيات */
+.dashboard-stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.stat-box h3 { margin: 0; font-size: 2em; color: var(--accent-color); }
+.stat-box p { margin: 0; color: #ccc; font-size: 0.9em; }
+
+/* الحقول */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.full-width { grid-column: 1 / -1; }
+
+label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em; }
+
+input, select, textarea {
+    width: 90%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: var(--input-bg);
+    color: white;
+}
+
+/* --- إعدادات الطباعة --- */
+@media print {
+    @page {
+        size: landscape; /* إجبار الصفحة على الوضع الأفقي */
+        margin: 5mm;     /* تقليل الهوامش */
+    }
+
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    /* إخفاء العناصر غير الضرورية عند الطباعة */
+    .bottom-nav, 
+    .dashboard-stats, 
+    #installBtn, 
+    .search-container,
+    .nav-btn,
+    #loginOverlay {
+        display: none !important;
+    }
+
+    /* تنسيق الجدول ليناسب الورقة */
+    table {
+        width: 100% !important;
+        font-size: 12px; /* تصغير الخط قليلاً */
+        border-collapse: collapse;
+    }
+    
+    td, th {
+        border: 1px solid black !important;
+        color: black !important;
+        padding: 2px !important;
+    }
+
+    /* تحويل الحقول (input) إلى نص عادي بدون خلفية */
+    input, select, textarea {
+        border: none !important;
+        background: transparent !important;
+        color: black !important;
+        padding: 0 !important;
+        width: auto !important;
+        font-weight: bold;
+    }
+
+    /* جعل مربعات الاختيار واضحة بالحبر الأسود */
+    .check-btn {
+        border: 1px solid black !important;
+    }
+    .check-btn.checked {
+        background-color: black !important;
+        -webkit-print-color-adjust: exact; /* لضمان طباعة اللون الأسود */
+        print-color-adjust: exact;
+    }
+}
