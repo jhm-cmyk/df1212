@@ -22,7 +22,7 @@ body {
     background: var(--gradient-bg);
     color: var(--text-color);
     min-height: 100vh;
-    padding-bottom: 80px; /* مساحة لشريط التنقل السفلي */
+    padding-bottom: 80px;
     direction: rtl;
 }
 
@@ -172,7 +172,7 @@ input:focus, textarea:focus {
     box-shadow: 0 0 10px var(--success-color);
 }
 
-/* الأزرار السفلية (Actions) */
+/* الأزرار السفلية */
 .actions {
     display: flex;
     flex-wrap: wrap;
@@ -226,7 +226,7 @@ input:focus, textarea:focus {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #1a2a4a; /* لون داكن للشريط */
+    background: #1a2a4a;
     display: flex;
     justify-content: space-around;
     padding: 10px 0;
@@ -252,10 +252,10 @@ input:focus, textarea:focus {
     color: var(--accent-color);
 }
 
-/* --- إعدادات الطباعة --- */
+/* --- إعدادات الطباعة المعدلة (بالعرض) --- */
 @media print {
     @page {
-        size: landscape;
+        size: landscape; /* إجبار الورقة بالعرض */
         margin: 5mm;
     }
 
@@ -264,8 +264,10 @@ input:focus, textarea:focus {
         color: black !important;
         padding: 0 !important;
         direction: rtl;
+        width: 100% !important;
     }
 
+    /* إخفاء العناصر غير الضرورية */
     .bottom-nav, 
     .dashboard-stats, 
     #installBtn, 
@@ -274,8 +276,7 @@ input:focus, textarea:focus {
     .actions,
     .nav-btn,
     #loginOverlay,
-    #backupControls,
-    .bottom-nav {
+    #backupControls {
         display: none !important;
     }
     
@@ -290,22 +291,23 @@ input:focus, textarea:focus {
     .print-header {
         text-align: center;
         border-bottom: 2px solid #000;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
-    /* تنسيق الجدول */
+    /* تنسيق الجدول ليناسب العرض */
     table {
         width: 100% !important;
-        font-size: 12px;
+        font-size: 10px; /* تصغير الخط قليلاً ليناسب 12 شهر */
         border-collapse: collapse;
-        margin-top: 20px;
+        margin-top: 10px;
     }
     
     td, th {
         border: 1px solid black !important;
         color: black !important;
-        padding: 4px !important;
+        padding: 2px !important; /* تقليل الهوامش الداخلية */
         text-align: center;
+        white-space: nowrap; /* منع التفاف النص */
     }
 
     /* الحقول */
@@ -318,20 +320,27 @@ input:focus, textarea:focus {
         width: auto !important;
         border-radius: 0 !important;
         font-weight: bold;
+        font-size: 12px;
     }
 
     .form-grid {
-        display: block; /* إلغاء الشبكة عند الطباعة للترتيب */
+        display: block;
     }
     
     .form-grid > div {
         display: inline-block;
-        width: 48%; /* عنصرين في كل سطر */
-        margin-bottom: 10px;
+        width: 32%; /* عرض الحقول بجانب بعضها */
+        margin-bottom: 5px;
+    }
+    
+    .full-width {
+        width: 100% !important;
     }
 
     /* مربعات الاختيار */
     .check-btn {
+        width: 20px; /* تصغير المربع */
+        height: 20px;
         border: 1px solid black !important;
         background: white !important;
     }
@@ -343,5 +352,6 @@ input:focus, textarea:focus {
 
     .print-only {
         display: flex !important;
+        margin-top: 20px;
     }
 }
