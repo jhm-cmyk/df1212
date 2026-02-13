@@ -7,7 +7,8 @@ import {
     doc, 
     updateDoc, 
     deleteDoc,
-    enableIndexedDbPersistence 
+    enableIndexedDbPersistence,
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- إعدادات فايربيس ---
@@ -23,8 +24,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- تفعيل وضع الأوفلاين (الحفظ في الهاتف) ---
-// هذه الخطوة تضمن أن البيانات تُحفظ محلياً أولاً
+// --- تفعيل وضع الأوفلاين القوي (Persistence) ---
 enableIndexedDbPersistence(db).catch((err) => {
     if (err.code == 'failed-precondition') {
         console.log("⚠️ تعدد التبويبات قد يعيق الحفظ المؤقت");
@@ -49,7 +49,23 @@ window.onload = async function() {
     
     document.querySelector('.bottom-nav').style.display = 'none';
     document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+    // مراقبة حالة الاتصال لتحديث الواجهة
+    updateConnectionStatus();
+    window.addEventListener('online',  () => { updateConnectionStatus(); fetchDataFromFirestore(); });
+    window.addEventListener('offline', () => { updateConnectionStatus(); });
 };
+
+function updateConnectionStatus() {
+    const statusSpan = document.getElementById('connectionStatus');
+    if (navigator.onLine) {
+        statusSpan.innerText = 'متصل (تزامن تلقائي) ✅';
+        statusSpan.style.color = 'var(--success-color)';
+    } else {
+        statusSpan.innerText = 'وضع الأوفلاين (محفوظ محلياً) 📱';
+        statusSpan.style.color = '#f39c12';
+    }
+}
 
 // --- نظام الحماية ---
 window.checkPin = function() {
@@ -57,7 +73,8 @@ window.checkPin = function() {
     if (pin === '1972') {
         document.getElementById('loginOverlay').style.display = 'none';
         document.querySelector('.bottom-nav').style.display = 'flex';
-        fetchDataFromFirestore(); 
+        // تفعيل الاستماع الحي للبيانات (Realtime Listener)
+        listenToData(); 
     } else {
         alert('❌ الرمز خطأ');
         document.getElementById('pinInput').value = '';
@@ -90,30 +107,26 @@ window.installApp = async function() {
     }
 };
 
-// --- دوال قاعدة البيانات (معدلة لتعمل أوفلاين) ---
+// --- دوال قاعدة البيانات (استماع حي) ---
 
+function listenToData() {
+    // استخدام onSnapshot يضمن التحديث التلقائي سواء كنت أونلاين أو أوفلاين
+    onSnapshot(familiesCol, (snapshot) => {
+        localDataCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateDashboard();
+        handleSearch({ target: { value: document.getElementById('searchInput').value } });
+    }, (error) => {
+        console.log("Offline mode active or permission error");
+    });
+}
+
+// دالة لجلب البيانات يدوياً عند عودة النت (اختياري لأن onSnapshot تكفي)
 async function fetchDataFromFirestore() {
-    document.getElementById('connectionStatus').innerText = 'جاري التحديث... ⏳';
     try {
-        // جلب البيانات (سواء من السيرفر أو من ذاكرة الهاتف)
         const snapshot = await getDocs(familiesCol);
         localDataCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         updateDashboard();
-        handleSearch({ target: { value: '' } });
-        
-        if (navigator.onLine) {
-            document.getElementById('connectionStatus').innerText = 'متصل (تزامن تلقائي) ✅';
-        } else {
-            document.getElementById('connectionStatus').innerText = 'وضع الأوفلاين (محفوظ محلياً) 📱';
-        }
-    } catch (e) {
-        console.error(e);
-        // في حال حدوث خطأ، نعرض البيانات المخزنة مؤقتاً في المتغيرات
-        if(localDataCache.length > 0) {
-            updateDashboard();
-            document.getElementById('connectionStatus').innerText = 'عرض البيانات المحلية ⚠️';
-        }
-    }
+    } catch (e) { console.log('Working offline...'); }
 }
 
 window.saveData = async function() {
@@ -142,39 +155,31 @@ window.saveData = async function() {
     };
 
     try {
-        // منطق الحفظ الذكي
+        // إذا كان هناك ID، نقوم بالتحديث، وإلا نقوم بالإضافة
+        // هذا يمنع التكرار تماماً لأننا نعتمد على ID المستند
         if (currentId) {
             const docRef = doc(db, "families", currentId);
-            // لا نستخدم await هنا لتعليق الواجهة، بل نترك فايربيس يدير الأمر
-            updateDoc(docRef, record);
+            await updateDoc(docRef, record);
+            alert(navigator.onLine ? '✅ تم التعديل بنجاح' : '📱 تم الحفظ محلياً (سيتم التعديل عند الاتصال)');
         } else {
-            addDoc(familiesCol, record);
-        }
-        
-        // رسالة فورية للمستخدم
-        if (navigator.onLine) {
-            alert('✅ تم الحفظ السحابي بنجاح');
-        } else {
-            alert('📱 لا يوجد إنترنت: تم الحفظ في الهاتف وسيتم الرفع تلقائياً عند الاتصال');
+            await addDoc(familiesCol, record);
+            alert(navigator.onLine ? '✅ تم الحفظ بنجاح' : '📱 تم الحفظ محلياً (سيتم الرفع عند الاتصال)');
         }
         
         clearForm();
-        // تحديث العرض فوراً (حتى لو لم يكتمل الرفع)
-        fetchDataFromFirestore(); 
         
     } catch (e) {
         console.error("Save Error:", e);
-        alert('❌ حدث خطأ غير متوقع، تأكد من المساحة أو المتصفح');
+        alert('❌ حدث خطأ، ولكن البيانات قد تكون محفوظة محلياً');
     }
 };
 
 window.deleteCurrent = async function() {
     if(!currentId || !confirm('هل أنت متأكد من الحذف؟')) return;
     try {
-        deleteDoc(doc(db, "families", currentId));
+        await deleteDoc(doc(db, "families", currentId));
         alert('تم حذف السجل');
         clearForm();
-        fetchDataFromFirestore();
     } catch (e) {
         alert('خطأ في الحذف');
     }
