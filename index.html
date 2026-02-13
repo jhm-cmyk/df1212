@@ -114,7 +114,7 @@
     <div id="tabSettings" class="tab-content">
         <div class="glass-panel" id="backupControls" style="text-align: center;">
             <h4 style="margin-top: 0;">🛠️ أدوات النظام</h4>
-            <p>حالة الاتصال: <span id="connectionStatus" style="color: var(--success-color);">متصل بـ Firestore ✅</span></p>
+            <p>حالة الاتصال: <span id="connectionStatus" style="color: var(--success-color);">جاري التحقق... ⏳</span></p>
             <hr style="border-color: var(--glass-border);">
             
             <button class="btn-install" id="installBtn" onclick="installApp()">📲 تثبيت التطبيق</button>
@@ -141,5 +141,14 @@
     </div>
 
     <script type="module" src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW Registered!', reg))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
 </body>
 </html>
