@@ -252,19 +252,37 @@ input:focus, textarea:focus {
     color: var(--accent-color);
 }
 
-/* --- إعدادات الطباعة المعدلة (بالعرض) --- */
+/* --- إعدادات الطباعة (تم الإصلاح: حل مشكلة الصفحة البيضاء والصفحتين) --- */
 @media print {
     @page {
-        size: landscape; /* إجبار الورقة بالعرض */
-        margin: 5mm;
+        size: landscape;
+        margin: 0;
     }
 
     body {
         background: white !important;
         color: black !important;
+        margin: 5mm !important;
         padding: 0 !important;
-        direction: rtl;
         width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* إجبار جميع النصوص والحقول على اللون الأسود */
+    * {
+        color: black !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+    }
+
+    input, select, textarea {
+        color: black !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px dotted #000 !important;
+        -webkit-text-fill-color: black !important; /* مهم للمتصفحات الحديثة */
     }
 
     /* إخفاء العناصر غير الضرورية */
@@ -286,6 +304,8 @@ input:focus, textarea:focus {
         box-shadow: none !important;
         margin: 0 !important;
         padding: 0 !important;
+        position: static !important;
+        width: 100% !important;
     }
 
     .print-header {
@@ -294,10 +314,10 @@ input:focus, textarea:focus {
         margin-bottom: 10px;
     }
 
-    /* تنسيق الجدول ليناسب العرض */
+    /* تنسيق الجدول */
     table {
         width: 100% !important;
-        font-size: 10px; /* تصغير الخط قليلاً ليناسب 12 شهر */
+        font-size: 10px;
         border-collapse: collapse;
         margin-top: 10px;
     }
@@ -305,22 +325,9 @@ input:focus, textarea:focus {
     td, th {
         border: 1px solid black !important;
         color: black !important;
-        padding: 2px !important; /* تقليل الهوامش الداخلية */
+        padding: 2px !important;
         text-align: center;
-        white-space: nowrap; /* منع التفاف النص */
-    }
-
-    /* الحقول */
-    input, select, textarea {
-        border: none !important;
-        border-bottom: 1px dotted #000 !important;
-        background: transparent !important;
-        color: black !important;
-        padding: 0 !important;
-        width: auto !important;
-        border-radius: 0 !important;
-        font-weight: bold;
-        font-size: 12px;
+        white-space: nowrap;
     }
 
     .form-grid {
@@ -329,7 +336,7 @@ input:focus, textarea:focus {
     
     .form-grid > div {
         display: inline-block;
-        width: 32%; /* عرض الحقول بجانب بعضها */
+        width: 32%;
         margin-bottom: 5px;
     }
     
@@ -339,7 +346,7 @@ input:focus, textarea:focus {
 
     /* مربعات الاختيار */
     .check-btn {
-        width: 20px; /* تصغير المربع */
+        width: 20px;
         height: 20px;
         border: 1px solid black !important;
         background: white !important;
